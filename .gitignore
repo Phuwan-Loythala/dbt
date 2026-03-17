@@ -1,0 +1,12 @@
+# Hide Streamlit secrets folder and all TOML files
+.streamlit/
+*.toml
+
+# Hide all text files (including your local data logs)
+*.txt
+
+# Hide SQLite databases (if you still have them)
+*.db
+
+# Hide Python cache
+__pycache__/
