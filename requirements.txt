@@ -4,3 +4,4 @@ requests
 plotly
 gspread
 st-gsheets-connection
+google-auth
