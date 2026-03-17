@@ -2,12 +2,17 @@ name: Commodity Data Pipeline
 
 on:
   schedule:
-    - cron: '*/15 * * * *'  # Runs every 15 minutes
-  workflow_dispatch:        # Allows you to click a button to run it manually
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
 
 jobs:
   run-collector:
     runs-on: ubuntu-latest
+    # --- ADD THIS BLOCK TO FIX THE ACCESS ERROR ---
+    permissions:
+      contents: write
+      actions: write
+    # -----------------------------------------------
     steps:
       - name: 1. Checkout repository code
         uses: actions/checkout@v4
@@ -23,7 +28,6 @@ jobs:
 
       - name: 4. Run collector script
         env:
-          # This maps your GitHub Secrets to the script's environment
           API_KEY_DATA: ${{ secrets.API_KEY_DATA }}
           SHEET_ID: ${{ secrets.SHEET_ID }}
         run: python collector.py --once
