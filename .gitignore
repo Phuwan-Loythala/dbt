@@ -2,11 +2,8 @@
 .streamlit/
 *.toml
 
-# Hide all text files (including your local data logs)
-*.txt
-
 # Hide SQLite databases (if you still have them)
 *.db
-
+*.gitignore
 # Hide Python cache
 __pycache__/

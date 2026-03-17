@@ -1,31 +1,36 @@
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
+import pandas as pd
 
-st.set_page_config(page_title="Cloud Commodity Tracker", layout="wide")
+st.set_page_config(page_title="Commodity Tracker", layout="wide")
 
-st.title("📈 Google Sheets Powered Dashboard")
+st.title("📈 Commodity Real-Time Pipeline")
+st.subheader("Personal Data Project")
 
-# Create Connection
-conn = st.connection("gsheets", type=GSheetsConnection)
-import streamlit as st
-api_key = st.secrets["API_KEY_DATA"]
-sheet_url = st.secrets["SPRDSHEET"]
-
-st.write(f"Connected to data source using key: {api_key[:4]}****")
-# Read Data (it uses the URL from your secrets)
 try:
-    df = conn.read(ttl="5m") # Cache for 5 mins
+    # Connect using [connections.gsheets] from secrets
+    conn = st.connection("gsheets", type=GSheetsConnection)
     
-    if not df.empty:
-        latest = df.iloc[-1]
-        st.metric(label=f"Latest {latest['name']}", value=f"${latest['price']}")
+    # Read data with 0 cache for debugging (change to 5m later)
+    df = conn.read(ttl=0)
+    
+    if df is not None and not df.empty:
+        df['timestamp_bkk'] = pd.to_datetime(df['timestamp_bkk'])
         
-        st.subheader("Price History")
+        # Metrics
+        latest = df.iloc[-1]
+        col1, col2 = st.columns(2)
+        col1.metric("Current Price", f"${latest['price']}")
+        col2.metric("Last Sync", latest['timestamp_bkk'].strftime('%H:%M:%S'))
+
+        # Visualization
         st.line_chart(df, x='timestamp_bkk', y='price')
         
-        with st.expander("View Spreadsheet Data"):
-            st.dataframe(df)
+        with st.expander("Raw Data View"):
+            st.dataframe(df.sort_values('timestamp_bkk', ascending=False))
     else:
-        st.info("Sheet is empty.")
+        st.warning("Connected, but no data found. Please run collector.py first!")
+
 except Exception as e:
-    st.error(f"Connect your Google Sheet in Secrets! Error: {e}")
+    st.error(f"Connection Failed: {e}")
+    st.info("Ensure your Google Sheet is shared with 'Anyone with the link can edit'.")
