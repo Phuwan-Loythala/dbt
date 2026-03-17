@@ -2,35 +2,35 @@ import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 
-st.set_page_config(page_title="Commodity Tracker", layout="wide")
+st.set_page_config(page_title="Commodity Dashboard", layout="wide")
 
 st.title("📈 Commodity Real-Time Pipeline")
-st.subheader("Personal Data Project")
+st.caption("Automated Data Pipeline via GitHub Actions & Google Sheets")
 
 try:
-    # Connect using [connections.gsheets] from secrets
+    # Connect using [connections.gsheets] from Streamlit Secrets
     conn = st.connection("gsheets", type=GSheetsConnection)
     
-    # Read data with 0 cache for debugging (change to 5m later)
-    df = conn.read(ttl=0)
+    # Read data (Cache for 5 mins)
+    df = conn.read(ttl="5m")
     
     if df is not None and not df.empty:
         df['timestamp_bkk'] = pd.to_datetime(df['timestamp_bkk'])
         
-        # Metrics
+        # Display latest metrics
         latest = df.iloc[-1]
-        col1, col2 = st.columns(2)
-        col1.metric("Current Price", f"${latest['price']}")
-        col2.metric("Last Sync", latest['timestamp_bkk'].strftime('%H:%M:%S'))
+        c1, c2 = st.columns(2)
+        c1.metric(f"Latest {latest['name'].title()} Price", f"${latest['price']}")
+        c2.metric("Last Update (BKK)", latest['timestamp_bkk'].strftime('%H:%M:%S'))
 
-        # Visualization
+        # Charting
         st.line_chart(df, x='timestamp_bkk', y='price')
         
-        with st.expander("Raw Data View"):
-            st.dataframe(df.sort_values('timestamp_bkk', ascending=False))
+        with st.expander("Show Raw Data"):
+            st.dataframe(df.sort_values('timestamp_bkk', ascending=False), use_container_width=True)
     else:
-        st.warning("Connected, but no data found. Please run collector.py first!")
+        st.warning("Connected to database, but no data found. Ensure collector.py is running.")
 
 except Exception as e:
-    st.error(f"Connection Failed: {e}")
-    st.info("Ensure your Google Sheet is shared with 'Anyone with the link can edit'.")
+    st.error(f"Configuration Error: {e}")
+    st.info("Ensure your spreadsheet URL is correct in the Streamlit Secrets tab.")
