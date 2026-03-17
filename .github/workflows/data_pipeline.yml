@@ -30,4 +30,5 @@ jobs:
         env:
           API_KEY_DATA: ${{ secrets.API_KEY_DATA }}
           SHEET_ID: ${{ secrets.SHEET_ID }}
+          GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }} # Add this line
         run: python collector.py --once

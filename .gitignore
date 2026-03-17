@@ -1,7 +1,7 @@
 # Hide Streamlit secrets folder and all TOML files
 .streamlit/
 *.toml
-
+servacc.json
 # Hide SQLite databases (if you still have them)
 *.db
 *.gitignore
